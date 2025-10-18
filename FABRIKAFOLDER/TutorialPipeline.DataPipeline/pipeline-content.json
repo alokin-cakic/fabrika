@@ -1,0 +1,132 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "Copy",
+        "typeProperties": {
+          "source": {
+            "type": "DelimitedTextSource",
+            "formatSettings": {
+              "type": "DelimitedTextReadSettings"
+            },
+            "storeSettings": {
+              "type": "LakehouseReadSettings",
+              "recursive": true,
+              "enablePartitionDiscovery": false
+            },
+            "datasetSettings": {
+              "type": "DelimitedText",
+              "typeProperties": {
+                "location": {
+                  "type": "LakehouseLocation"
+                },
+                "columnDelimiter": ",",
+                "quoteChar": "\"",
+                "escapeChar": "\\",
+                "firstRowAsHeader": true
+              },
+              "schema": [],
+              "linkedService": {
+                "name": "TutorialLakehouse",
+                "properties": {
+                  "type": "Lakehouse",
+                  "typeProperties": {
+                    "artifactId": "a2b55ed0-9725-9d7b-4e6f-d9162056c230",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000",
+                    "rootFolder": "Files"
+                  },
+                  "annotations": []
+                }
+              },
+              "annotations": []
+            }
+          },
+          "sink": {
+            "type": "LakehouseTableSink",
+            "tableActionOption": "Append",
+            "applyVOrder": true,
+            "datasetSettings": {
+              "type": "LakehouseTable",
+              "typeProperties": {
+                "table": "Sales"
+              },
+              "schema": [],
+              "linkedService": {
+                "name": "TutorialLakehouse",
+                "properties": {
+                  "type": "Lakehouse",
+                  "typeProperties": {
+                    "artifactId": "a2b55ed0-9725-9d7b-4e6f-d9162056c230",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000",
+                    "rootFolder": "Tables"
+                  },
+                  "annotations": []
+                }
+              },
+              "annotations": []
+            }
+          },
+          "translator": {
+            "type": "TabularTranslator",
+            "mappings": [
+              {
+                "source": {
+                  "name": "date"
+                },
+                "sink": {
+                  "name": "Date"
+                }
+              },
+              {
+                "source": {
+                  "name": "total"
+                },
+                "sink": {
+                  "name": "SalesValue"
+                }
+              }
+            ],
+            "typeConversion": true,
+            "typeConversionSettings": {
+              "allowDataTruncation": true,
+              "treatBooleanAsNumber": false
+            }
+          },
+          "enableStaging": false
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "CSVtoTable",
+        "state": "Active",
+        "dependsOn": []
+      },
+      {
+        "type": "Teams",
+        "typeProperties": {
+          "inputs": {
+            "body": {
+              "recipient": "19:002a51c0aae540eb82ceeac3e440430c@thread.v2",
+              "messageBody": "<p>Status: @{activity('CSVtoTable').output.copyDuration}@{activity('CSVtoTable').output.rowsRead}@{activity('CSVtoTable').output.rowsCopied}@{activity('CSVtoTable').output.filesWritten}@{activity('CSVtoTable').output.dataWritten}@{activity('CSVtoTable').output.filesRead}@{activity('CSVtoTable').output.dataRead}</p>\n<p>@{pipeline().DataFactory}</p>\n<p>@{pipeline()?.TriggerEvent?.Subject}</p>\n<p>@{pipeline().PipelineName}</p>\n<p>@{pipeline()?.TriggerEvent?.Type}</p>\n<p>@{pipeline()?.TriggerEvent?.FileName}</p>\n<p>@{pipeline()?.TriggerEvent?.FolderPath}</p>"
+            },
+            "method": "post",
+            "path": "/beta/teams/conversation/message/poster/User/location/Group chat"
+          }
+        },
+        "name": "Teams1",
+        "dependsOn": [
+          {
+            "activity": "CSVtoTable",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
